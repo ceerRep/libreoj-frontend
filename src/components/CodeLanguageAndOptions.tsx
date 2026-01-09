@@ -17,6 +17,7 @@ interface CodeLanguageAndOptionsProps {
   classNameForLanguage?: string;
   classNameForCompileAndRunOptions?: string;
   language: CodeLanguage;
+  allowedLanguages?: CodeLanguage[];
   compileAndRunOptions: Record<string, unknown>;
   onUpdateLanguage: (newLanguage: CodeLanguage) => void;
   onUpdateCompileAndRunOptions: (newCompileAndRunOptions: Record<string, unknown>) => void;
@@ -41,7 +42,11 @@ let CodeLanguageAndOptions: React.FC<CodeLanguageAndOptionsProps> = props => {
         className={props.classNameForLanguage}
         label={props.headerForLanguage || _(".code_language")}
         value={props.language}
-        options={Object.keys(compileAndRunOptions).map(language => ({
+        options={Object.keys(compileAndRunOptions)
+          .filter(language =>
+            !props.allowedLanguages || props.allowedLanguages.includes(language as CodeLanguage)
+          )
+          .map(language => ({
           key: language,
           value: language,
           text: _(`.${language}.name`)

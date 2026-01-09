@@ -3,6 +3,7 @@ import { appState } from "@/appState";
 export enum CodeLanguage {
   Cpp = "cpp",
   C = "c",
+  Cuda = "cuda",
   Java = "java",
   Kotlin = "kotlin",
   Pascal = "pascal",
@@ -28,9 +29,18 @@ export interface CodeLanguageOption {
   defaultValue: string; // string | boolean
 }
 
+export interface CodeLanguageShownOption {
+  highlightAs?: string;
+}
+
+export const codeLanguageShownOptions: Partial<Record<CodeLanguage, CodeLanguageShownOption>> = {
+  [CodeLanguage.Cuda]: { highlightAs: "cpp" }
+};
+
 const codeLanguageExtensions: Record<CodeLanguage, string[]> = {
   [CodeLanguage.Cpp]: [".cpp", ".cc", ".cxx"],
   [CodeLanguage.C]: [".c"],
+  [CodeLanguage.Cuda]: [".cu"],
   [CodeLanguage.Java]: [".java"],
   [CodeLanguage.Kotlin]: [".kt"],
   [CodeLanguage.Pascal]: [".pas"],
@@ -100,6 +110,7 @@ export const compileAndRunOptions: Record<CodeLanguage, CodeLanguageOption[]> = 
       defaultValue: "64"
     }
   ],
+  [CodeLanguage.Cuda]: [],
   [CodeLanguage.Java]: [],
   [CodeLanguage.Kotlin]: [
     {

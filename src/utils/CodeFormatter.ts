@@ -39,6 +39,7 @@ export const defaultOptions = [
 const languageToModeMap = {
   [CodeLanguage.Cpp]: "c",
   [CodeLanguage.C]: "c",
+  [CodeLanguage.Cuda]: "c",
   [CodeLanguage.Java]: "java",
   [CodeLanguage.CSharp]: "cs"
 };

@@ -1,5 +1,7 @@
 import getScript from "getscript-promise";
 
+import { codeLanguageShownOptions } from "../interfaces/CodeLanguage";
+
 let Prism: typeof import("prismjs");
 
 export const loadPrism = (() => {
@@ -85,6 +87,9 @@ export function highlightSync(code: string, language: string) {
 }
 
 export async function highlight(code: string, language: string, callback: (result: string) => void) {
+  if (codeLanguageShownOptions[language as any]?.highlightAs) {
+    language = codeLanguageShownOptions[language as any].highlightAs;
+  }
   const loadLanguagePromise = loadLanguages([language]);
   if (loadLanguagePromise) await loadLanguagePromise;
   callback(highlightSync(code, language));

@@ -88,6 +88,9 @@ return {
       }
     }
   },
+  cuda: {
+    name: "CUDA",
+  },
   java: {
     name: "[TBT] Java"
   },

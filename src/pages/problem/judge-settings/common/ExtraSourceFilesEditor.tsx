@@ -13,7 +13,7 @@ import { JudgeInfoProcessor, EditorComponentProps } from "./interface";
 
 export interface JudgeInfoWithExtraSourceFiles {
   // language => dst => src
-  extraSourceFiles?: Partial<Record<CodeLanguage, Record<string, string>>>;
+  extraSourceFiles?: Partial<Record<CodeLanguage, {files: Record<string, string>, flags: string[]}>>;
 }
 
 type ExtraSourceFilesEditorProps = EditorComponentProps<JudgeInfoWithExtraSourceFiles>;
@@ -24,14 +24,17 @@ let ExtraSourceFilesEditor: React.FC<ExtraSourceFilesEditorProps> = props => {
   // To support inserting empty items, use a local copy for editing
   // XXX: If the judge info's extraSourceFiles is modified outside this componment, it won't get synced
   //      This componment should be unmounted and remounted.
-  type ExtraSourceFiles = Partial<Record<CodeLanguage, [string, string, string][]>>; // [uuid, dst, src]
+  type ExtraSourceFiles = Partial<Record<CodeLanguage, {files: [string, string, string][], flags: string[]}>>; // [uuid, dst, src]
   const [extraSourceFiles, setExtraSourceFiles] = useState<ExtraSourceFiles>(
     Object.fromEntries(
       Object.values(CodeLanguage).map(codeLanguage =>
         props.judgeInfo.extraSourceFiles
           ? [
               codeLanguage,
-              Object.entries(props.judgeInfo.extraSourceFiles[codeLanguage] || {}).map(a => [uuid(), ...a])
+              {
+                files: Object.entries(props.judgeInfo.extraSourceFiles[codeLanguage]?.files ?? {}).map(a => [uuid(), ...a]),
+                flags: props.judgeInfo.extraSourceFiles[codeLanguage]?.flags ?? []
+              }
             ]
           : [codeLanguage, []]
       )
@@ -43,8 +46,11 @@ let ExtraSourceFilesEditor: React.FC<ExtraSourceFilesEditorProps> = props => {
       extraSourceFiles: Object.fromEntries(
         Object.values(CodeLanguage)
           .map(codeLanguage =>
-            extraSourceFiles[codeLanguage].length > 0
-              ? [codeLanguage, Object.fromEntries(extraSourceFiles[codeLanguage].map(a => a.slice(1)))]
+          (extraSourceFiles[codeLanguage].files.length > 0 || extraSourceFiles[codeLanguage].flags.length > 0)
+              ? [codeLanguage, {
+                files: Object.fromEntries(extraSourceFiles[codeLanguage].files.map(a => a.slice(1))), 
+                flags: extraSourceFiles[codeLanguage].flags
+              }]
               : null
           )
           .filter(x => x)
@@ -79,7 +85,7 @@ let ExtraSourceFilesEditor: React.FC<ExtraSourceFilesEditorProps> = props => {
       updateExtraSourceFiles(
         update(extraSourceFiles, {
           [codeLanguage]: {
-            $push: [[uuid(), "", ""]]
+            files: { $push: [[uuid(), "", ""]] }
           }
         })
       );
@@ -87,19 +93,21 @@ let ExtraSourceFilesEditor: React.FC<ExtraSourceFilesEditorProps> = props => {
       updateExtraSourceFiles(
         update(extraSourceFiles, {
           [codeLanguage]: {
-            $splice: [[i, 1]]
+            files: { $splice: [[i, 1]] }
           }
         })
       );
     } else {
-      const item = extraSourceFiles[codeLanguage][i];
+      const item = extraSourceFiles[codeLanguage].files[i];
       const newDst = newValue.dst == null ? item[1] : newValue.dst;
       const newSrc = newValue.src == null ? item[2] : newValue.src;
       updateExtraSourceFiles(
         update(extraSourceFiles, {
           [codeLanguage]: {
-            [i]: {
-              $set: [item[0], newDst, newSrc]
+            files: { 
+              [i]: {
+                $set: [item[0], newDst, newSrc]
+              }
             }
           }
         })
@@ -136,19 +144,19 @@ let ExtraSourceFilesEditor: React.FC<ExtraSourceFilesEditorProps> = props => {
               </Menu.Menu>
             </Menu>
             {extraSourceFiles &&
-              Object.entries(extraSourceFiles).map(([codeLanguage, files], iLanguage, { length: lengthLanguage }) =>
-                files.map(([uuid, dst, src], i) => (
+              Object.entries(extraSourceFiles).map(([codeLanguage, content], iLanguage, { length: lengthLanguage }) =>
+                content.files.map(([uuid, dst, src], i) => (
                   <Menu
                     className={style.extraSourceFilesItem}
                     key={uuid}
-                    attached={i == files.length - 1 && iLanguage === lengthLanguage - 1 ? "bottom" : (true as any)}
+                    attached={i == content.files.length - 1 && iLanguage === lengthLanguage - 1 ? "bottom" : (true as any)}
                   >
                     <Menu.Item
                       className={style.itemTitle + " " + style.language}
                       style={
                         i == 0
                           ? {
-                              height: 41 * files.length - 1
+                              height: 41 * content.files.length - 1
                             }
                           : {
                               visibility: "hidden"
@@ -217,16 +225,22 @@ const judgeInfoProcessor: JudgeInfoProcessor<JudgeInfoWithExtraSourceFiles> = {
           ? Object.fromEntries(
               Object.entries(raw.extraSourceFiles)
                 .filter(
-                  ([language, fileMap]) =>
+                  ([language, langContent]) =>
                     Object.values(CodeLanguage).includes(language as CodeLanguage) &&
-                    fileMap &&
-                    typeof fileMap === "object"
+                    langContent &&
+                    typeof langContent === "object"
                 )
-                .map(([language, fileMap]) => [
+                .map(([language, langContent]) => [language, langContent as any])
+                .map(([language, langContent]) => [
                   language,
-                  Object.fromEntries(Object.entries(fileMap).filter(([dst, src]) => typeof src === "string"))
+                  {
+                    files: (langContent.files && typeof langContent.files === "object" && Object.fromEntries(Object.entries(langContent.files).filter(([dst, src]) => typeof src === "string"))) ?? {},
+                    flags: (langContent.flags && Array.isArray(langContent.flags))
+                      ? (langContent.flags as Array<unknown>).filter(flag => typeof flag === "string")
+                      : []
+                  }
                 ])
-                .filter(([language, fileMap]) => Object.keys(fileMap).length > 0)
+                .filter(([language, langContent]) => Object.keys(langContent.files).length > 0 || langContent.flags.length > 0)
             )
           : null
     };

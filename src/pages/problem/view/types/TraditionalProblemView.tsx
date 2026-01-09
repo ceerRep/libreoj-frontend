@@ -83,6 +83,12 @@ interface SubmissionContent {
 type TraditionalProblemSubmitViewProps = ProblemTypeSubmitViewProps<JudgeInfoTraditional, SubmissionContent>;
 
 let TraditionalProblemSubmitView: React.FC<TraditionalProblemSubmitViewProps> = props => {
+  const allowedLanguages = Object.values(CodeLanguage).filter(
+    codeLanguage => {
+      const lang = props.judgeInfo.extraSourceFiles?.[codeLanguage] ?? { files: {}, flags: [] };
+      return Object.keys(lang.files).length > 0 || lang.flags.length > 0;
+    });
+  
   return (
     <>
       <SubmitViewFrame
@@ -99,7 +105,7 @@ let TraditionalProblemSubmitView: React.FC<TraditionalProblemSubmitViewProps> = 
         }
         sidebarContent={
           <>
-            <CodeLanguageAndOptions objectPath="" {...props} />
+            <CodeLanguageAndOptions objectPath="" allowedLanguages={allowedLanguages || null} {...props} />
           </>
         }
         submitDisabled={!props.submissionContent.code}

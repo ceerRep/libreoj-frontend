@@ -9,7 +9,7 @@ import * as Monaco from "monaco-editor";
 
 import style from "./CodeEditor.module.less";
 
-import { CodeLanguage } from "@/interfaces/CodeLanguage";
+import { CodeLanguage, codeLanguageShownOptions } from "@/interfaces/CodeLanguage";
 import { appState } from "@/appState";
 import { generateCodeFontEditorOptions } from "@/misc/fonts";
 import { themeList } from "@/themes";
@@ -63,6 +63,12 @@ let CodeEditor: React.FC<CodeEditorProps> = props => {
     }
   }
 
+  let editorLanguage = props.language;
+
+  if (codeLanguageShownOptions[props.language as any]?.highlightAs) {
+    editorLanguage = codeLanguageShownOptions[props.language as any].highlightAs;
+  }
+
   return (
     <div
       ref={initializeResizeSensor}
@@ -70,7 +76,7 @@ let CodeEditor: React.FC<CodeEditorProps> = props => {
     >
       <ReactMonacoEditor
         theme={themeList[appState.theme].editor}
-        language={props.language}
+        language={editorLanguage}
         value={props.value}
         options={{
           lineNumbersMinChars: 4,

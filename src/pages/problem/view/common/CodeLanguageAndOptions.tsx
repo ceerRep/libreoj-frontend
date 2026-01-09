@@ -9,6 +9,7 @@ import CodeLanguageAndOptionsComponent from "@/components/CodeLanguageAndOptions
 
 interface CodeLanguageAndOptionsProps {
   objectPath: string;
+  allowedLanguages?: CodeLanguage[];
   pendingSubmit: boolean;
   submissionContent: object;
   onUpdateSubmissionContent: (path: string, value: unknown) => void;
@@ -32,6 +33,7 @@ let CodeLanguageAndOptions: React.FC<CodeLanguageAndOptionsProps> = props => {
         pending={props.pendingSubmit}
         language={submissionContent.language}
         compileAndRunOptions={submissionContent.compileAndRunOptions}
+        allowedLanguages={props.allowedLanguages}
         onUpdateLanguage={newLanguage => onUpdate("language", newLanguage)}
         onUpdateCompileAndRunOptions={compileAndRunOptions => onUpdate("compileAndRunOptions", compileAndRunOptions)}
       />

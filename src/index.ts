@@ -12,6 +12,14 @@
  *          => Layout.tsx    (app view layout)
  *          => page routes
  */
+
+// Wait for external dependencies (mobx, react, etc.) to load before importing app code
+// This prevents "mobx.action is not a function" error when clearing cache
+const scriptTagsLoaded = (window as any).scriptTagsLoaded as Promise<void> | undefined;
+if (scriptTagsLoaded) {
+  await scriptTagsLoaded;
+}
+
 import "./index.tsx";
 
 export {}; // Fix the error "All files must be modules when the '--isolatedModules' flag is provided".

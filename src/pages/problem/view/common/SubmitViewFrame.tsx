@@ -1,4 +1,4 @@
-import React from "react";
+import React, { PropsWithChildren } from "react";
 import { Header, Menu, Button, Checkbox } from "semantic-ui-react";
 import { observer } from "mobx-react";
 
@@ -76,7 +76,7 @@ interface EditorWrapperProps {
   disabled?: boolean;
 }
 
-const EditorWrapper: React.FC<EditorWrapperProps> = props => {
+const EditorWrapper: React.FC<PropsWithChildren<EditorWrapperProps>> = props => {
   return <div className={style.editorWrapper + (props.disabled ? " " + style.disabled : "")}>{props.children}</div>;
 };
 

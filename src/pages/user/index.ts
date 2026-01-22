@@ -1,11 +1,11 @@
-import { mount, lazy, redirect } from "navi";
+import { mount, lazy, redirect, map } from "navi";
 
-import { defineRoute, legacyRoutes, RouteError } from "@/AppRouter";
+import { legacyRoutes, RouteError } from "@/AppRouter";
 import getRoute from "@/utils/getRoute";
 import { makeToBeLocalizedText } from "@/locales";
 import api from "@/api";
 
-const redirectToUsernameRoute = defineRoute(async request => {
+const redirectToUsernameRoute = map(async request => {
   const userId = Number(request.params.userId);
   if (!userId) throw new RouteError(makeToBeLocalizedText(`user_edit.errors.NO_SUCH_USER`));
 

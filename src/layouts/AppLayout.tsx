@@ -27,7 +27,7 @@ import { EmojiRenderer } from "@/components/EmojiRenderer";
 
 export type NavButtonName = "home" | "problem_set" | "submissions" | "members" | "discussion";
 
-let AppLayout: React.FC = props => {
+let AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigation = useNavigationChecked();
   const loadingRoute = useLoadingRoute();
   const _ = useLocalizer("common");
@@ -266,7 +266,7 @@ let AppLayout: React.FC = props => {
         </Container>
       </Menu>
       {getFooter(style.footer + " " + style.real)}
-      <Container id={style.mainUiContainer}>{props.children}</Container>
+      <Container id={style.mainUiContainer}>{children}</Container>
       {getFooter(style.footer + " " + style.placeholder)}
       {!wide && (
         <>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { PropsWithChildren, useEffect, useRef, useState } from "react";
 
 import style from "./HorizontalScroll.module.less";
 import { useBoundingRect } from "@/utils/hooks";
@@ -7,7 +7,7 @@ interface HorizontalScrollProps {
   className?: string;
 }
 
-const HorizontalScroll: React.FC<HorizontalScrollProps> = props => {
+const HorizontalScroll: React.FC<PropsWithChildren<HorizontalScrollProps>> = props => {
   const [width, setWidthReferenceElement] = useBoundingRect("width");
   const [height, setHeightReferenceElement] = useBoundingRect("height");
 

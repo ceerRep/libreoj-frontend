@@ -155,7 +155,9 @@
     "postinstall": "patch-package"
   },
   "resolutions": {
-    "esbuild": "0.15.5"
+    "esbuild": "0.15.5",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0"
   },
   "eslintConfig": {
     "extends": "react-app"

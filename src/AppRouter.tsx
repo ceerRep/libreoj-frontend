@@ -45,8 +45,8 @@ export function defineRoute(getViewFunction: (request: NaviRequest) => Promise<R
   });
 }
 
-class ErrorBoundary extends React.Component<{}, { hasError: boolean; error?: Error }> {
-  constructor(props: unknown) {
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error?: Error }> {
+  constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { hasError: false };
   }

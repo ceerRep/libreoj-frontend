@@ -10,7 +10,7 @@ export function unescapeLocalizedMessage(text: string) {
 const importers = import.meta.glob("./messages/*-*.ts");
 export async function loadLocaleData(locale: Locale): Promise<Record<string, string>>;
 export async function loadLocaleData(locale: Locale): Promise<any> {
-  return (await importers[`./messages/${locale.replace("_", "-")}.ts`]()).default;
+  return ((await importers[`./messages/${locale.replace("_", "-")}.ts`]()) as any).default;
 }
 
 export type LocalizerParameters = Record<React.ReactText, React.ReactText> | React.ReactText[];

@@ -78,3 +78,18 @@ export function getProblemDisplayName(
       return all;
   }
 }
+
+export function getExtractInterfaceCode(problem: ApiTypes.GetProblemResponseDto): string {
+  try {
+    const interfaceSection = problem.localizedContentsOfLocale.contentSections.find(section =>
+      /接口约定/i.test(section.sectionTitle)
+    );
+    if (!interfaceSection?.text) return "";
+
+    const match = interfaceSection.text.match(/```(?:cpp|c\+\+|c|cuda)([\s\S]*?)```/i);
+    return match?.[1]?.trim() || "";
+  } catch (e) {
+    console.error("Failed to extract interface code", e);
+    return "";
+  }
+}

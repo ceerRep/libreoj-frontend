@@ -48,7 +48,8 @@ import { ProblemType } from "@/interfaces/ProblemType";
 import { ProblemTypeView } from "./common/interface";
 import MarkdownContent, { MarkdownContentPatcher } from "@/markdown/MarkdownContent";
 import { callApiWithFileUpload } from "@/utils/callApiWithFileUpload";
-import { getProblemDisplayName, getProblemUrl } from "../utils";
+import { getProblemDisplayName, getProblemUrl, getExtractInterfaceCode } from "../utils";
+import { CodeLanguage } from "@/interfaces/CodeLanguage";
 import { onEnterPress } from "@/utils/onEnterPress";
 import { downloadProblemFile, downloadProblemFilesAsArchive } from "../files/ProblemFilesPage";
 import { makeToBeLocalizedText } from "@/locales";
@@ -335,9 +336,21 @@ let ProblemViewPage: React.FC<ProblemViewPageProps> = props => {
   // Begin submit
   const [inSubmitView, setInSubmitView] = useState(false);
   const refScrollTopBackup = useRef(0);
-  const [submissionContent, setSubmissionContent] = useState(
-    props.problem.lastSubmission.lastSubmissionContent || ProblemTypeView.getDefaultSubmissionContent()
-  );
+  const getInitialSubmissionContent = () =>
+    props.problem.lastSubmission.lastSubmissionContent || {
+      ...ProblemTypeView.getDefaultSubmissionContent(),
+      code: getExtractInterfaceCode(props.problem)
+    };
+
+  const initialSubmissionContent = useRef(getInitialSubmissionContent()).current;
+  const [submissionContent, setSubmissionContent] = useState(initialSubmissionContent);
+
+  function getDefaultCode(language: string) {
+    if (language === CodeLanguage.Cuda) {
+      return getExtractInterfaceCode(props.problem);
+    }
+    return "";
+  }
   const scrollElement = document.documentElement;
 
   function openSubmitView() {
@@ -355,12 +368,24 @@ let ProblemViewPage: React.FC<ProblemViewPageProps> = props => {
   }
 
   const [modified, setModified] = useConfirmNavigation();
+
+  useEffect(() => {
+    const currentContent = submissionContent as any;
+    const isInitial = JSON.stringify(submissionContent) === JSON.stringify(initialSubmissionContent);
+    const isDefault = currentContent.code === getDefaultCode(currentContent.language);
+    const shouldBeModified = !(isInitial || isDefault);
+
+    if (modified !== shouldBeModified) {
+      setModified(shouldBeModified);
+    }
+  }, [submissionContent, initialSubmissionContent, modified]);
+
   function updateSubmissionContent(path: string, value: any) {
-    setModified(true);
     const spec = {};
     objectPath.set(spec, path + ".$set", value);
-    setSubmissionContent(submissionContent => update(submissionContent, spec));
+    setSubmissionContent(prev => update(prev, spec));
   }
+
 
   const [submitPending, setSubmitPending] = useState(false);
 

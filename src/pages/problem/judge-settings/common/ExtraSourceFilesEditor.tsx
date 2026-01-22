@@ -36,7 +36,7 @@ let ExtraSourceFilesEditor: React.FC<ExtraSourceFilesEditorProps> = props => {
                 flags: props.judgeInfo.extraSourceFiles[codeLanguage]?.flags ?? []
               }
             ]
-          : [codeLanguage, []]
+          : [codeLanguage, {files: [], flags: []}]
       )
     )
   );
@@ -46,9 +46,9 @@ let ExtraSourceFilesEditor: React.FC<ExtraSourceFilesEditorProps> = props => {
       extraSourceFiles: Object.fromEntries(
         Object.values(CodeLanguage)
           .map(codeLanguage =>
-          (extraSourceFiles[codeLanguage].files.length > 0 || extraSourceFiles[codeLanguage].flags.length > 0)
+          ((extraSourceFiles[codeLanguage]?.files?.length ?? 0) > 0 || (extraSourceFiles[codeLanguage]?.flags?.length ?? 0) > 0)
               ? [codeLanguage, {
-                files: Object.fromEntries(extraSourceFiles[codeLanguage].files.map(a => a.slice(1))), 
+                files: Object.fromEntries((extraSourceFiles[codeLanguage].files ?? []).map(a => a.slice(1))), 
                 flags: extraSourceFiles[codeLanguage].flags
               }]
               : null
@@ -145,7 +145,7 @@ let ExtraSourceFilesEditor: React.FC<ExtraSourceFilesEditorProps> = props => {
             </Menu>
             {extraSourceFiles &&
               Object.entries(extraSourceFiles).map(([codeLanguage, content], iLanguage, { length: lengthLanguage }) =>
-                content.files.map(([uuid, dst, src], i) => (
+                (content.files ?? []).map(([uuid, dst, src], i) => (
                   <Menu
                     className={style.extraSourceFilesItem}
                     key={uuid}

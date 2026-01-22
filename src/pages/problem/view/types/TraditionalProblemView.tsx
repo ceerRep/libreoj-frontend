@@ -5,7 +5,7 @@ import { observer } from "mobx-react";
 import style from "./TraditionalProblemView.module.less";
 
 import { useLocalizer } from "@/utils/hooks";
-import { CodeLanguage } from "@/interfaces/CodeLanguage";
+import { CodeLanguage, getPreferredCompileAndRunOptions } from "@/interfaces/CodeLanguage";
 import CodeEditor from "@/components/LazyCodeEditor";
 
 import { JudgeInfoTraditional } from "../../judge-settings/types/TraditionalProblemEditor";
@@ -83,11 +83,32 @@ interface SubmissionContent {
 type TraditionalProblemSubmitViewProps = ProblemTypeSubmitViewProps<JudgeInfoTraditional, SubmissionContent>;
 
 let TraditionalProblemSubmitView: React.FC<TraditionalProblemSubmitViewProps> = props => {
-  const allowedLanguages = Object.values(CodeLanguage).filter(
-    codeLanguage => {
-      const lang = props.judgeInfo.extraSourceFiles?.[codeLanguage] ?? { files: {}, flags: [] };
-      return Object.keys(lang.files).length > 0 || lang.flags.length > 0;
-    });
+  const allowedLanguages = React.useMemo(
+    () =>
+      Object.values(CodeLanguage).filter(codeLanguage => {
+        const lang = props.judgeInfo.extraSourceFiles?.[codeLanguage] ?? { files: {}, flags: [] };
+        return Object.keys(lang.files).length > 0 || lang.flags.length > 0;
+      }),
+    [props.judgeInfo]
+  );
+
+  React.useEffect(() => {
+    if (allowedLanguages.length === 0) {
+      return;
+    }
+
+    const currentLanguage = props.submissionContent.language;
+    if (currentLanguage && allowedLanguages.includes(currentLanguage)) {
+      return;
+    }
+
+    const fallbackLanguage = allowedLanguages[0];
+    props.onUpdateSubmissionContent("language", fallbackLanguage);
+    props.onUpdateSubmissionContent(
+      "compileAndRunOptions",
+      getPreferredCompileAndRunOptions(fallbackLanguage)
+    );
+  }, [allowedLanguages, props.onUpdateSubmissionContent, props.submissionContent.language]);
   
   return (
     <>
@@ -105,7 +126,7 @@ let TraditionalProblemSubmitView: React.FC<TraditionalProblemSubmitViewProps> = 
         }
         sidebarContent={
           <>
-            <CodeLanguageAndOptions objectPath="" allowedLanguages={allowedLanguages || null} {...props} />
+            <CodeLanguageAndOptions objectPath="" allowedLanguages={allowedLanguages.length > 0 ? allowedLanguages : null} {...props} />
           </>
         }
         submitDisabled={!props.submissionContent.code}

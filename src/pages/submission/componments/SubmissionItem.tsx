@@ -12,6 +12,7 @@ import ScoreText from "@/components/ScoreText";
 import { CodeLanguage } from "@/interfaces/CodeLanguage";
 import { getProblemDisplayName, getProblemIdString, getProblemUrl } from "@/pages/problem/utils";
 import { EmojiRenderer } from "@/components/EmojiRenderer";
+import { formatSubmissionTime } from "@/utils/formatSubmissionTime";
 
 function parseSubmissionMeta(submission: ApiTypes.SubmissionMetaDto) {
   return {
@@ -83,6 +84,8 @@ export const SubmissionItem: React.FC<SubmissionItemProps> = props => {
 
   const [refAnswerInfoIcon, setRefAnswerInfoIcon] = useState<HTMLElement>();
 
+  const submissionTimeUsed  = formatSubmissionTime(submission.timeUsed || 0);
+
   return (
     <Table.Row className={style[props.page + "Page"]}>
       {(props.statusPopup || (x => x))(
@@ -109,7 +112,7 @@ export const SubmissionItem: React.FC<SubmissionItemProps> = props => {
       </Table.Cell>
       {!props?.config?.hideTimeMemory && (
         <>
-          <Table.Cell className={style.columnTime}>{Math.round(submission.timeUsed || 0) + " ms"}</Table.Cell>
+          <Table.Cell className={style.columnTime}>{submissionTimeUsed}</Table.Cell>
           <Table.Cell className={style.columnMemory} title={(submission.memoryUsed || 0) + " K"}>
             {formatFileSize((submission.memoryUsed || 0) * 1024, 1)}
           </Table.Cell>
@@ -213,6 +216,8 @@ export const SubmissionItemMobile: React.FC<SubmissionItemMobileProps> = props =
 
   const importantField = props.importantField || "submitTime";
 
+  const submissionTimeUsed = formatSubmissionTime(submission.timeUsed || 0);
+
   return (
     <Table.Row className={style.submissionItemMobile}>
       <Table.Cell>
@@ -246,7 +251,7 @@ export const SubmissionItemMobile: React.FC<SubmissionItemMobileProps> = props =
                 <UserLink user={submission.submitter} />
               </div>
               {props.importantField === "timeUsed" ? (
-                <div>{Math.round(submission.timeUsed || 0) + " ms"}</div>
+                <div>{submissionTimeUsed}</div>
               ) : props.importantField === "memoryUsed" ? (
                 <div title={(submission.memoryUsed || 0) + " K"}>
                   {formatFileSize((submission.memoryUsed || 0) * 1024, 1)}
@@ -286,6 +291,8 @@ export const SubmissionItemExtraRows: React.FC<SubmissionItemExtraRowsProps> = p
 
   const { submission, timeString, problemIdString, problemUrl } = parseSubmissionMeta(props.submission);
 
+  const submissionTimeUsed = formatSubmissionTime(submission.timeUsed || 0);
+
   const columnStatus = (props.statusPopup || (x => x))(
     <div className={style.extraRowsColumnStatus}>
       <StatusText status={submission.status} />
@@ -316,7 +323,7 @@ export const SubmissionItemExtraRows: React.FC<SubmissionItemExtraRowsProps> = p
   const columnTime = (
     <div>
       <Icon name="time" />
-      {Math.round(submission.timeUsed || 0) + " ms"}
+      {submissionTimeUsed}
     </div>
   );
 

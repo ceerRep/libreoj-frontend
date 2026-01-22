@@ -22,6 +22,7 @@ import { TestcaseResultCommon, ProblemTypeSubmissionView, GetAdditionalSectionsC
 import { SubmissionProgressMessageMetaOnly, SubmissionProgressType } from "../common";
 import { makeToBeLocalizedText } from "@/locales";
 import { EmojiRenderer } from "@/components/EmojiRenderer";
+import { formatSubmissionTime } from "@/utils/formatSubmissionTime";
 
 async function fetchData(submissionId: number) {
   const { requestError, response } = await api.submission.getSubmissionDetail({
@@ -412,11 +413,11 @@ let SubmissionPage: React.FC<SubmissionPageProps> = props => {
                   title={
                     testcaseResult.time == null
                       ? null
-                      : Math.round(testcaseResult.time || 0) + " ms / " + testcaseResult.testcaseInfo.timeLimit + " ms"
+                      : formatSubmissionTime(testcaseResult.time || 0) + " / " + formatSubmissionTime(testcaseResult.testcaseInfo.timeLimit)
                   }
                 >
                   <Icon className={style.accordionTitleIcon} name="clock" />
-                  {Math.round(testcaseResult.time || 0) + " ms"}
+                  {formatSubmissionTime(testcaseResult.time || 0)}
                 </span>
               </Grid.Column>
             );

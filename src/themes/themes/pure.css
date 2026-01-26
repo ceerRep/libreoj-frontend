@@ -6,11 +6,11 @@ body[data-theme=pure] {
   --theme-foreground-disabled: rgba(40, 40, 40, 0.3);
   --theme-selection-background: #CCE2FF;
 
-  --theme-border: rgba(34, 36, 38, 0.15);
+  --theme-border: rgba(34, 36, 38, 0.1);
   --theme-border-light: #fafafa;
-  --theme-border-hover: rgba(34, 36, 38, 0.35);
+  --theme-border-hover: rgba(34, 36, 38, 0.25);
   --theme-border-active: #96C8DA;
-  --theme-shadow: rgba(34, 36, 38, 0.15);
+  --theme-shadow: rgba(0, 0, 0, 0.05);
 
   --theme-hyperlink: #4183C4;
   --theme-hyperlink-hover: #1e70bf;

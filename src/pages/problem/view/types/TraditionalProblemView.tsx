@@ -118,6 +118,7 @@ let TraditionalProblemSubmitView: React.FC<TraditionalProblemSubmitViewProps> = 
         mainContent={
           <SubmitViewFrame.EditorWrapper>
             <CodeEditor
+              className={style.noBorder}
               language={props.submissionContent.language}
               value={props.submissionContent.code}
               onChange={newValue => props.onUpdateSubmissionContent("code", newValue)}

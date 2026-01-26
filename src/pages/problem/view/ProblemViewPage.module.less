@@ -1,10 +1,87 @@
 @import "common/common.module.less";
 
+.splitLayout {
+  display: flex;
+  height: calc(100vh - 48px); // 48px is header height (body margin-top)
+  overflow: hidden;
+}
+
+.leftColumn {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 5px;
+  padding-bottom: 20px;
+  overscroll-behavior: contain;
+}
+
+.resizing {
+  background-color: rgba(33, 133, 208, 0.5); // Semantic UI Blue with opacity
+  width: 8px;
+}
+
+.resizer {
+  width: 8px;
+  cursor: col-resize;
+  background-color: transparent;
+  transition: background-color 0.2s;
+  z-index: 100;
+  flex-shrink: 0;
+  margin: 0 -4px;
+  position: relative;
+
+  &:hover {
+    background-color: rgba(33, 133, 208, 0.5); // Semantic UI Blue with opacity
+    width: 8px;
+  }
+  
+  &.resizing {
+    background-color: rgba(33, 133, 208, 0.5); // Semantic UI Blue with opacity
+    width: 8px;
+  }
+  
+  &::after {
+     content: "";
+     display: block;
+     width: 1px;
+     height: 100%;
+     background: #e0e0e0;
+     margin: 0 auto;
+  }
+}
+
+.rightColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-left: 5px;
+  overscroll-behavior: contain;
+}
+
+.rightTab {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+
+  :global(.ui.bottom.attached.segment.tab) {
+    flex-grow: 1;
+    overflow-y: auto;
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
 .topContainer {
   padding: 10px 0;
   display: flex;
   align-items: center;
-  margin-bottom: 27.5px;
+  margin-bottom: 10px; // Reduced margin
 
   .titleSection {
     flex-grow: 1;
@@ -69,7 +146,7 @@
 
   @media only screen and (max-width: 767px) {
     width: min-content;
-    padding-top: 4px;
+    padding-top: 20px;
     padding-bottom: 14px;
     margin: 0 auto !important;
   }
@@ -83,6 +160,7 @@
 .divider {
   margin: 0 0 37.5px calc(50% - 50vw) !important;
   width: 100vw;
+  display: none;
 }
 
 .statementView {

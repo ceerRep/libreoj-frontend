@@ -494,3 +494,92 @@ html, body {
     background: var(--theme-scrollbar-thumb-hover) !important;
   }
 }
+
+/* ==========================================================================
+   Modernization Overrides (Added by AI Assistant)
+   ========================================================================== */
+
+/* Typography Improvements */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+/* Rounded Corners & Clean Look */
+.ui.segment, 
+.ui.card, 
+.ui.message, 
+.ui.modal, 
+.ui.popup, 
+.ui.input > input,
+.ui.button,
+.ui.label,
+.ui.dropdown .menu,
+.ui.table {
+  border-radius: 8px !important;
+}
+
+/* Modern Segment Shadows (Softer and larger) */
+.ui.segment:not(.vertical):not(.attached) {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid var(--theme-border) !important;
+}
+
+/* Card Improvements */
+.ui.card, .ui.cards > .card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ui.card:hover, .ui.cards > .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Button Interactions */
+.ui.button {
+  transition: all 0.2s ease !important;
+  letter-spacing: 0.3px;
+}
+
+.ui.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ui.button:active {
+  transform: translateY(0);
+}
+
+/* Input Fields breathing room */
+.ui.input > input {
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+
+/* Table Clean up */
+.ui.table {
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+.ui.table thead th {
+  background-color: var(--theme-table-header-background) !important;
+  border-bottom: 2px solid var(--theme-border) !important;
+}
+
+/* Menu (Navbar) Improvements */
+.ui.menu {
+  border: none !important;
+}
+
+/* Remove harsh borders from segments in lists */
+.ui.segments {
+  border-radius: 8px !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+}
+
+.ui.segments > .segment {
+  border-top: 1px solid var(--theme-border-light) !important;
+}
+

@@ -16,6 +16,7 @@ export interface ProblemTypeSubmitViewProps<JudgeInfo, SubmissionContent = objec
   onCloseSubmitView: () => void;
   onUpdateSubmissionContent: (path: string, value: unknown) => void;
   onSubmit: (onGetSubmitFile?: () => Promise<Blob>) => Promise<void>;
+  layoutMode?: "default" | "sidebar";
 }
 
 export interface ProblemTypeView<JudgeInfo, SubmissionContent = object> {

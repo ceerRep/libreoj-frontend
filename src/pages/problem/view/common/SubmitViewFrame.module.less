@@ -1,5 +1,56 @@
 @import "common.module.less";
 
+.sidebarMode {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  border: 1px solid #d4d4d5;
+  border-radius: 4px;
+
+  .sidebarHeader {
+    padding-bottom: 0;
+    border-bottom: none;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: auto;
+    padding: 10px;
+    gap: 10px;
+
+    .sidebarLanguage {
+      flex-grow: 1;
+    }
+  }
+
+  .sidebarEditor {
+    flex-grow: 1;
+    position: relative;
+    border: none;
+    border-radius: 0;
+    overflow: hidden;
+    margin-bottom: 0;
+
+    .editorWrapper {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100% !important;
+    }
+  }
+
+  .sidebarFooter {
+    margin-top: 0;
+    padding-top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
 .submitView {
   display: flex;
   width: 100%;
@@ -39,13 +90,14 @@
 }
 
 .skipSamples {
-  margin-top: 19px !important;
-  margin-bottom: -6px !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
   display: block !important;
+  white-space: nowrap;
 }
 
 .submitButton {
-  margin-top: 25px !important;
+  margin-top: 0 !important;
 }
 
 .lastSubmission {

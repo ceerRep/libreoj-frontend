@@ -22,10 +22,48 @@ interface SubmitViewFrameProps {
   onCloseSubmitView: () => void;
   onUpdateSubmissionContent: (path: string, value: unknown) => void;
   onSubmit: (onGetSubmitFile?: () => Promise<Blob>) => void;
+  layoutMode?: "default" | "sidebar";
+  hideSkipSamples?: boolean;
 }
 
 let SubmitViewFrame: React.FC<SubmitViewFrameProps> = props => {
   const _ = useLocalizer("problem");
+
+  if (props.layoutMode === "sidebar") {
+    return (
+      <div className={style.sidebarMode}>
+        <div className={style.sidebarHeader}>
+          <div className={style.sidebarLanguage}>{props.sidebarContent}</div>
+        </div>
+        <div className={style.sidebarActions}>
+          {!props.hideSkipSamples && props.showSkipSamples && (
+            <Checkbox
+            className={style.skipSamples}
+            label={_(".submit.skip_samples")}
+            checked={(props.submissionContent as any).skipSamples}
+            onChange={(e, { checked }) => props.onUpdateSubmissionContent("skipSamples", checked)}
+            />
+          )} 
+        </div>
+        <div className={style.sidebarEditor}>
+          {props.mainContent}
+        </div>
+        <div className={style.sidebarFooter}>
+          {/* {props.lastSubmission && props.lastSubmission.lastSubmission && (
+            <div className={style.lastSubmission}>
+              <Header size="tiny" content={_(".submit.last_submission")} />
+              <Link href={`/s/${props.lastSubmission.lastSubmission.id}`}>
+                <StatusText status={props.lastSubmission.lastSubmission.status} />
+              </Link>
+              <Link className={style.scoreText} href={`/s/${props.lastSubmission.lastSubmission.id}`}>
+                <ScoreText score={props.lastSubmission.lastSubmission.score || 0} />
+              </Link>
+            </div>
+          )} */}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={style.submitView} style={{ display: props.inSubmitView ? null : "none" }}>

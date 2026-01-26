@@ -116,6 +116,29 @@ body {
   }
 }
 
+
+:global(body.full-width-mode) {
+  overflow: hidden !important;
+}
+
+:global(body.full-width-mode) #mainUiContainer, :global(body.full-width-mode) #mainMenuContainer {
+  width: 100% !important;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  max-width: 100% !important;
+}
+
+:global(body.full-width-mode) :global(#root) {
+  padding-top: 0 !important;
+}
+
+:global(body.full-width-mode) :global(#root) .footer.placeholder,
+:global(body.full-width-mode) :global(#root) .footer.real {
+  display: none !important;
+}
+
 @media only screen and (max-width: 1127px) {
   :global(.ui.container) {
     width: 100% !important;
@@ -123,7 +146,7 @@ body {
     margin-right: 0 !important;
   }
 
-  #mainUiContainer {
+  :global(body:not(.full-width-mode)) #mainUiContainer {
     width: auto !important;
     margin-left: 15px !important;
     margin-right: 15px !important;
@@ -131,7 +154,7 @@ body {
 }
 
 @media only screen and (min-width: 1128px) {
-  #mainUiContainer, #mainMenuContainer {
+  :global(body:not(.full-width-mode)) #mainUiContainer, :global(body:not(.full-width-mode)) #mainMenuContainer {
     width: 1127px !important;
   }
 

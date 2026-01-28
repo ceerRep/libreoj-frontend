@@ -46,6 +46,8 @@
     flex-direction: column;
     background: #fff;
     min-height: 30px;
+    z-index: 20;
+    position: relative;
     
     .bottomPanelHeader {
         height: 30px;
@@ -74,7 +76,7 @@
 
     .bottomPanelContent {
         flex: 1;
-        overflow-y: auto;
+        overflow: visible;
         padding: 10px;
         
         .optionsContainer {
@@ -85,14 +87,15 @@
             flex-wrap: wrap; // Allow wrapping if space is tight
 
             @media only screen and (max-width: 767px) {
-                flex-direction: column;
-                align-items: flex-start;
+                flex-direction: row;
+                align-items: center;
+                gap: 10px;
             }
         }
 
         .languageSection {
             flex: 1;
-            min-width: 200px;
+            min-width: 120px;
         }
 
         .actionsSection {
@@ -101,6 +104,11 @@
             gap: 20px;
             padding-top: 4px; // Align visually with form labels if needed
             white-space: nowrap;
+            
+            @media only screen and (max-width: 767px) {
+                 gap: 10px;
+                 padding-top: 24px;
+            }
         }
     }
   }

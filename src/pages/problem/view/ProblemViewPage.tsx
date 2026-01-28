@@ -433,9 +433,10 @@ let ProblemViewPage: React.FC<ProblemViewPageProps> = props => {
   const problemViewMarkdownContentPatcher = useProblemViewMarkdownContentPatcher(props.problem.meta.id);
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
 
   const additionalActions = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
        {(props.problem.judgeInfo as any).runSamples && (
          <Checkbox
            className={style.skipSamples}
@@ -444,7 +445,7 @@ let ProblemViewPage: React.FC<ProblemViewPageProps> = props => {
            onChange={(e, { checked }) => updateSubmissionContent("skipSamples", checked)}
          />
        )}
-       <Dropdown text="更多选项" button className="icon" direction="left" upward={false}>
+       <Dropdown text="更多选项" button className="icon" direction="left">
          <Dropdown.Menu>
              {ProblemTypeView.enableStatistics() && (
                <Dropdown.Item
@@ -577,6 +578,268 @@ let ProblemViewPage: React.FC<ProblemViewPageProps> = props => {
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
   }, []);
+
+  if (isMobile) {
+    if (mobileEditorOpen) {
+         return (
+             <div className={style.problemViewPage} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', zIndex: 1000, background: '#fff' }}>
+                  <div style={{ flex: '0 0 50px', display: 'flex', alignItems: 'center', padding: '0 10px', borderBottom: '1px solid #ddd', justifyContent: 'space-between', background: '#fff' }}>
+                      <Button icon="arrow left" basic onClick={() => setMobileEditorOpen(false)} />
+                      <Header as="h4" style={{ margin: 0 }}>{_(".action.submit")}</Header>
+                      <Button 
+                          primary 
+                          size="small" 
+                          icon="paper plane" 
+                          content={_(".submit.submit")} 
+                          onClick={() => onSubmit()} 
+                          loading={submitPending}
+                      />
+                  </div>
+                  <div style={{ flex: 1, overflow: 'hidden' }}>
+                      <ProblemTypeView.SubmitView
+                          judgeInfo={props.problem.judgeInfo}
+                          lastSubmission={props.problem.lastSubmission}
+                          inSubmitView={true}
+                          pendingSubmit={submitPending}
+                          submissionContent={submissionContent}
+                          onCloseSubmitView={() => setMobileEditorOpen(false)}
+                          onUpdateSubmissionContent={updateSubmissionContent}
+                          onSubmit={onSubmit}
+                          layoutMode="sidebar"
+                          hideSkipSamples={true}
+                          additionalActions={additionalActions}
+                      />
+                  </div>
+             </div>
+         );
+    }
+    return (
+      <div className={style.problemViewPage}>
+        {permissionManager}
+        {deleteDialog.element}
+        <div className={style.topContainer}>
+          <div className={style.titleSection}>
+            <Header as="h1" className={style.header}>
+              {props.problem.lastSubmission.lastAcceptedSubmission && (
+                <Link
+                  className={style.lastAcceptedSubmission}
+                  href={`/s/${props.problem.lastSubmission.lastAcceptedSubmission.id}`}
+                >
+                  <StatusIcon status="Accepted" />
+                </Link>
+              )}
+              <EmojiRenderer>
+                <span>
+                  {idString}.&nbsp;{title}
+                </span>
+              </EmojiRenderer>
+              {props.problem.meta.locales.length > 1 && (
+                <Dropdown icon="globe" className={style.languageSelectIcon}>
+                  <Dropdown.Menu>
+                    {props.problem.meta.locales.map((locale: Locale) => (
+                      <Dropdown.Item
+                        key={locale}
+                        onClick={() => {
+                          navigation.navigate({
+                            query: {
+                              locale: locale
+                            }
+                          });
+                        }}
+                        flag={localeMeta[locale].flag}
+                        text={_(`language.${locale}`)}
+                        value={locale}
+                        selected={locale === props.problem.localizedContentsOfLocale.locale}
+                      />
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+              )}
+            </Header>
+            <div className={style.labels}>
+              {!props.problem.meta.isPublic && (
+                <Label size="small" color="red" basic>
+                  <Icon name="eye slash" />
+                  {_(`.meta_labels.non_public`)}
+                </Label>
+              )}
+              {!props.problem.meta.displayId && (
+                <Label size="small" color="brown" basic>
+                  <Icon name="hashtag" />
+                  {_(`.meta_labels.no_display_id`)}
+                </Label>
+              )}
+              <Label size="small" color="teal">
+                <Icon name="book" />
+                {_(`.type.${props.problem.meta.type}`)}
+              </Label>
+              <ProblemTypeView.Labels size="small" judgeInfo={props.problem.judgeInfo} />
+              {props.problem.tagsOfLocale.length > 0 && (
+                <>
+                  <Label
+                    size="small"
+                    color="grey"
+                    as="a"
+                    onClick={toggleTags}
+                    className={style.toggleTagsLabel}
+                  >
+                    {!showTags ? _(".show_tags") : _(".hide_tags")}
+                    <Icon name={"caret down"} style={{ transform: showTags && "rotateZ(-90deg)" }} />
+                  </Label>
+                  {showTags && (
+                    <>
+                      {props.problem.tagsOfLocale.map(tag => (
+                        <EmojiRenderer key={tag.id}>
+                          <Label
+                            size="small"
+                            content={tag.name}
+                            color={tag.color as any}
+                            as={Link}
+                            href={{
+                              pathname: "/p",
+                              query: {
+                                tagIds: tag.id.toString()
+                              }
+                            }}
+                          />
+                        </EmojiRenderer>
+                      ))}
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+          {statistic}
+        </div>
+        <Divider className={style.divider} />
+
+        <div className={style.statementView} style={{ display: "block" }}>
+          <div className={style.leftContainer}>
+            {localizedContentUnavailableMessageVisable &&
+              ![appState.contentLocale, props.requestedLocale].includes(
+                props.problem.localizedContentsOfLocale.locale as Locale
+              ) && (
+                <Message
+                  onDismiss={() => setLocalizedContentUnavailableMessageVisable(false)}
+                  content={
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: _("common.localized_content_unavailable", {
+                          display_locale: `<b>${_(`language.${props.problem.localizedContentsOfLocale.locale}`)}</b>`
+                        })
+                      }}
+                    />
+                  }
+                />
+              )}
+            {props.problem.localizedContentsOfLocale.contentSections.map((section, i) => (
+              <React.Fragment key={i}>
+                <EmojiRenderer>
+                  <Header size="large">{section.sectionTitle}</Header>
+                </EmojiRenderer>
+                {section.type === "Text" ? (
+                  <>
+                    <MarkdownContent content={section.text} patcher={problemViewMarkdownContentPatcher} />
+                  </>
+                ) : (
+                  <>
+                    <Grid columns="equal">
+                      <Grid.Row>
+                        <Grid.Column className={style.sample + " " + style.sampleInput}>
+                          <Header size="small" className={style.sampleHeader}>
+                            {_(".sample.input")}
+                            <Label
+                              size="small"
+                              as="a"
+                              pointing="below"
+                              className={style.copySample}
+                              onClick={e =>
+                                onCopySampleClick(
+                                  section.sampleId,
+                                  "input",
+                                  props.problem.samples[section.sampleId].inputData
+                                )
+                              }
+                            >
+                              {lastCopiedSample.id === section.sampleId && lastCopiedSample.type === "input"
+                                ? _(".sample.copied")
+                                : _(".sample.copy")}
+                            </Label>
+                          </Header>
+                          <Segment className={style.sampleDataSegment}>
+                            <EmojiRenderer>
+                              <pre className={style.sampleDataPre}>
+                                <code>{props.problem.samples[section.sampleId].inputData}</code>
+                              </pre>
+                            </EmojiRenderer>
+                          </Segment>
+                        </Grid.Column>
+                        <Grid.Column
+                          className={
+                            style.sample +
+                            " " +
+                            style.sampleOutput +
+                            (props.problem.samples[section.sampleId].outputData === "" ? " " + style.empty : "")
+                          }
+                        >
+                          <Header size="small" className={style.sampleHeader}>
+                            {_(".sample.output")}
+                            <Label
+                              size="small"
+                              as="a"
+                              pointing="below"
+                              className={style.copySample}
+                              onClick={e =>
+                                onCopySampleClick(
+                                  section.sampleId,
+                                  "output",
+                                  props.problem.samples[section.sampleId].outputData
+                                )
+                              }
+                            >
+                              {lastCopiedSample.id === section.sampleId && lastCopiedSample.type === "output"
+                                ? _(".sample.copied")
+                                : _(".sample.copy")}
+                            </Label>
+                          </Header>
+                          <Segment className={style.sampleDataSegment}>
+                            <EmojiRenderer>
+                              <pre className={style.sampleDataPre}>
+                                <code>{props.problem.samples[section.sampleId].outputData}</code>
+                              </pre>
+                            </EmojiRenderer>
+                          </Segment>
+                        </Grid.Column>
+                      </Grid.Row>
+                      <Grid.Row className={style.sampleExplanation}>
+                        <Grid.Column>
+                          <MarkdownContent content={section.text} patcher={problemViewMarkdownContentPatcher} />
+                        </Grid.Column>
+                      </Grid.Row>
+                    </Grid>
+                  </>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+          <Divider className={style.divider + " " + style.dividerBottom} />
+          {statistic}
+        </div>
+        
+        {/* Mobile Action Button */}
+        <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 100 }}>
+             <Button
+                circular
+                icon="paper plane"
+                size="huge"
+                primary
+                onClick={() => setMobileEditorOpen(true)}
+             />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={style.splitLayout} ref={splitLayoutRef}>

@@ -1,10 +1,10 @@
-import React, { PropsWithChildren, useState, useRef, useCallback } from "react";
+import React, { PropsWithChildren, useState, useRef, useCallback, useEffect } from "react";
 import { Header, Menu, Button, Checkbox, Icon } from "semantic-ui-react";
 import { observer } from "mobx-react";
 
 import style from "./SubmitViewFrame.module.less";
 
-import { useLocalizer, Link } from "@/utils/hooks";
+import { useLocalizer, Link, useScreenWidthWithin } from "@/utils/hooks";
 import StatusText from "@/components/StatusText";
 import ScoreText from "@/components/ScoreText";
 
@@ -29,22 +29,34 @@ interface SubmitViewFrameProps {
 
 let SubmitViewFrame: React.FC<SubmitViewFrameProps> = props => {
   const _ = useLocalizer("problem");
+  const isMobile = useScreenWidthWithin(0, 768);
 
   // Bottom panel resizing logic
-  const [bottomPanelHeight, setBottomPanelHeight] = useState(120);
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(isMobile ? 240 : 120);
   const [isResizingBottom, setIsResizingBottom] = useState(false);
   const [isBottomCollapsed, setIsBottomCollapsed] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const startResizingBottom = useCallback((mouseDownEvent: React.MouseEvent) => {
-    setIsResizingBottom(true);
-    mouseDownEvent.preventDefault();
+  useEffect(() => {
+    if (isMobile) {
+      setBottomPanelHeight(240);
+    } else {
+      setBottomPanelHeight(120);
+    }
+  }, [isMobile]);
 
-    const startY = mouseDownEvent.clientY;
+  const startResizingBottom = useCallback((event: React.MouseEvent | React.TouchEvent) => {
+    setIsResizingBottom(true);
+    // Prevent default behavior to avoid scrolling on touch devices
+    if (event.cancelable) event.preventDefault();
+
+    const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
+    const startY = clientY;
     const startHeight = bottomPanelHeight;
 
-    const onMouseMove = (mouseMoveEvent: MouseEvent) => {
-        const deltaY = startY - mouseMoveEvent.clientY;
+    const onMove = (moveEvent: MouseEvent | TouchEvent) => {
+        const currentY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : (moveEvent as MouseEvent).clientY;
+        const deltaY = startY - currentY;
         const newHeight = startHeight + deltaY;
         
         // 允许高度调整，但如果不折叠，最小高度设为 30px
@@ -57,19 +69,23 @@ let SubmitViewFrame: React.FC<SubmitViewFrameProps> = props => {
         }
     };
 
-    const onMouseUp = () => {
+    const onEnd = () => {
       setIsResizingBottom(false);
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onEnd);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onEnd);
     };
 
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onEnd);
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("touchend", onEnd);
   }, [bottomPanelHeight]);
 
   const toggleBottomCollapse = () => {
       if (isBottomCollapsed) {
-          setBottomPanelHeight(120);
+          setBottomPanelHeight(isMobile ? 240 : 120);
           setIsBottomCollapsed(false);
       } else {
           setBottomPanelHeight(30);
@@ -87,11 +103,12 @@ let SubmitViewFrame: React.FC<SubmitViewFrameProps> = props => {
         <div 
             className={`${style.resizer} ${isResizingBottom ? style.resizing : ""}`}
             onMouseDown={startResizingBottom}
+            onTouchStart={startResizingBottom}
         />
 
         <div className={style.bottomPanel} style={{ height: bottomPanelHeight }}>
-            <div className={style.bottomPanelHeader}>
-                 <div className={style.tabTitle} onClick={toggleBottomCollapse}>
+            <div className={style.bottomPanelHeader} onTouchStart={startResizingBottom} onMouseDown={startResizingBottom}>
+                 <div className={style.tabTitle} onClick={(e) => { e.stopPropagation(); toggleBottomCollapse(); }}>
                     <Icon name={isBottomCollapsed ? "angle up" : "angle down"} />
                     选项
                  </div>

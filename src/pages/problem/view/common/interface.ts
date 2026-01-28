@@ -17,6 +17,8 @@ export interface ProblemTypeSubmitViewProps<JudgeInfo, SubmissionContent = objec
   onUpdateSubmissionContent: (path: string, value: unknown) => void;
   onSubmit: (onGetSubmitFile?: () => Promise<Blob>) => Promise<void>;
   layoutMode?: "default" | "sidebar";
+  hideSkipSamples?: boolean;
+  additionalActions?: React.ReactNode;
 }
 
 export interface ProblemTypeView<JudgeInfo, SubmissionContent = object> {

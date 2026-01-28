@@ -1,5 +1,5 @@
-import React, { PropsWithChildren } from "react";
-import { Header, Menu, Button, Checkbox } from "semantic-ui-react";
+import React, { PropsWithChildren, useState, useRef, useCallback } from "react";
+import { Header, Menu, Button, Checkbox, Icon } from "semantic-ui-react";
 import { observer } from "mobx-react";
 
 import style from "./SubmitViewFrame.module.less";
@@ -24,42 +24,92 @@ interface SubmitViewFrameProps {
   onSubmit: (onGetSubmitFile?: () => Promise<Blob>) => void;
   layoutMode?: "default" | "sidebar";
   hideSkipSamples?: boolean;
+  additionalActions?: React.ReactNode;
 }
 
 let SubmitViewFrame: React.FC<SubmitViewFrameProps> = props => {
   const _ = useLocalizer("problem");
 
+  // Bottom panel resizing logic
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(120);
+  const [isResizingBottom, setIsResizingBottom] = useState(false);
+  const [isBottomCollapsed, setIsBottomCollapsed] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const startResizingBottom = useCallback((mouseDownEvent: React.MouseEvent) => {
+    setIsResizingBottom(true);
+    mouseDownEvent.preventDefault();
+
+    const startY = mouseDownEvent.clientY;
+    const startHeight = bottomPanelHeight;
+
+    const onMouseMove = (mouseMoveEvent: MouseEvent) => {
+        const deltaY = startY - mouseMoveEvent.clientY;
+        const newHeight = startHeight + deltaY;
+        
+        // 允许高度调整，但如果不折叠，最小高度设为 30px
+        if (newHeight >= 30 && newHeight < 600) {
+             setBottomPanelHeight(newHeight);
+             setIsBottomCollapsed(false);
+        } else if (newHeight < 30) {
+             setBottomPanelHeight(30);
+             setIsBottomCollapsed(true);
+        }
+    };
+
+    const onMouseUp = () => {
+      setIsResizingBottom(false);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  }, [bottomPanelHeight]);
+
+  const toggleBottomCollapse = () => {
+      if (isBottomCollapsed) {
+          setBottomPanelHeight(120);
+          setIsBottomCollapsed(false);
+      } else {
+          setBottomPanelHeight(30);
+          setIsBottomCollapsed(true);
+      }
+  }
+
   if (props.layoutMode === "sidebar") {
     return (
-      <div className={style.sidebarMode}>
-        <div className={style.sidebarHeader}>
-          <div className={style.sidebarLanguage}>{props.sidebarContent}</div>
-        </div>
-        <div className={style.sidebarActions}>
-          {!props.hideSkipSamples && props.showSkipSamples && (
-            <Checkbox
-            className={style.skipSamples}
-            label={_(".submit.skip_samples")}
-            checked={(props.submissionContent as any).skipSamples}
-            onChange={(e, { checked }) => props.onUpdateSubmissionContent("skipSamples", checked)}
-            />
-          )} 
-        </div>
-        <div className={style.sidebarEditor}>
+      <div className={style.sidebarMode} ref={containerRef}>
+        <div className={style.sidebarEditor} style={{ flexGrow: 1, height: `calc(100% - ${bottomPanelHeight}px)` }}>
           {props.mainContent}
         </div>
-        <div className={style.sidebarFooter}>
-          {/* {props.lastSubmission && props.lastSubmission.lastSubmission && (
-            <div className={style.lastSubmission}>
-              <Header size="tiny" content={_(".submit.last_submission")} />
-              <Link href={`/s/${props.lastSubmission.lastSubmission.id}`}>
-                <StatusText status={props.lastSubmission.lastSubmission.status} />
-              </Link>
-              <Link className={style.scoreText} href={`/s/${props.lastSubmission.lastSubmission.id}`}>
-                <ScoreText score={props.lastSubmission.lastSubmission.score || 0} />
-              </Link>
+        
+        <div 
+            className={`${style.resizer} ${isResizingBottom ? style.resizing : ""}`}
+            onMouseDown={startResizingBottom}
+        />
+
+        <div className={style.bottomPanel} style={{ height: bottomPanelHeight }}>
+            <div className={style.bottomPanelHeader}>
+                 <div className={style.tabTitle} onClick={toggleBottomCollapse}>
+                    <Icon name={isBottomCollapsed ? "angle up" : "angle down"} />
+                    选项
+                 </div>
             </div>
-          )} */}
+            {!isBottomCollapsed && (
+                <div className={style.bottomPanelContent}>
+                    <div className={style.optionsContainer}>
+                        <div className={style.languageSection}>
+                            {props.sidebarContent}
+                        </div>
+                        {props.additionalActions && (
+                            <div className={style.actionsSection}>
+                                {props.additionalActions}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
       </div>
     );

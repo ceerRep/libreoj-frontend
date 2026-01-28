@@ -434,6 +434,83 @@ let ProblemViewPage: React.FC<ProblemViewPageProps> = props => {
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
+  const additionalActions = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+       {(props.problem.judgeInfo as any).runSamples && (
+         <Checkbox
+           className={style.skipSamples}
+           label={_(".submit.skip_samples")}
+           checked={(submissionContent as any).skipSamples}
+           onChange={(e, { checked }) => updateSubmissionContent("skipSamples", checked)}
+         />
+       )}
+       <Dropdown text="更多选项" button className="icon" direction="left" upward={false}>
+         <Dropdown.Menu>
+             {ProblemTypeView.enableStatistics() && (
+               <Dropdown.Item
+                 as={Link}
+                 href={getProblemUrl(props.problem.meta, { subRoute: "statistics/fastest" })}
+                 icon="sort content ascending"
+                 text={_(".action.statistics")}
+               />
+             )}
+             <Dropdown.Item
+               as={Link}
+               href={{
+                 pathname: "/d",
+                 query: {
+                   problemId: props.problem.meta.id
+                 }
+               }}
+               icon="comments"
+               text={_(".action.discussion")}
+             />
+             <Dropdown.Item
+               name={_(".action.files")}
+               icon="folder open"
+               as={Link}
+               href={getProblemUrl(props.problem.meta, { subRoute: "files" })}
+               text={_(".action.files")}
+             />
+             <Dropdown.Divider />
+             {props.problem.permissionOfCurrentUser.includes("Modify") && (
+               <Dropdown.Item
+                 icon="edit"
+                 as={Link}
+                 href={{
+                   pathname: getProblemUrl(props.problem.meta, { subRoute: "edit" }),
+                   query: props.requestedLocale
+                     ? {
+                         locale: props.requestedLocale
+                       }
+                     : null
+                 }}
+                 text={_(".action.edit")}
+               />
+             )}
+             {props.problem.permissionOfCurrentUser.includes("Modify") && (
+               <Dropdown.Item
+                 icon="cog"
+                 as={Link}
+                 href={getProblemUrl(props.problem.meta, { subRoute: "judge-settings" })}
+                 text={_(".action.judge_settings")}
+               />
+             )}
+             {props.problem.permissionOfCurrentUser.includes("Modify") && (
+                 <Dropdown.Item onClick={onClickPermissionManage} icon="key" text={_(".action.permission_manage")} />
+             )}
+             {props.problem.permissionOfCurrentUser.includes("Delete") && (
+               <Dropdown.Item
+                 icon="delete"
+                 onClick={deleteDialog.open}
+                 text={_(".action.delete")}
+               />
+             )}
+         </Dropdown.Menu>
+       </Dropdown>
+    </div>
+  );
+
   const tabs = [
     {
       menuItem: _(".action.submit"),
@@ -450,6 +527,7 @@ let ProblemViewPage: React.FC<ProblemViewPageProps> = props => {
             onSubmit={onSubmit}
             layoutMode="sidebar"
             hideSkipSamples={true}
+            additionalActions={additionalActions}
           />
         </Tab.Pane>
       )
@@ -468,6 +546,12 @@ let ProblemViewPage: React.FC<ProblemViewPageProps> = props => {
   const [isResizing, setIsResizing] = useState(false);
   const splitLayoutRef = useRef<HTMLDivElement>(null);
 
+  const isLeftCollapsed = leftWidthPercentage < 2;
+  const isRightCollapsed = leftWidthPercentage > 98;
+
+  const restoreLeft = () => setLeftWidthPercentage(50);
+  const restoreRight = () => setLeftWidthPercentage(50);
+
   const startResizing = useCallback((mouseDownEvent: React.MouseEvent) => {
     setIsResizing(true);
     mouseDownEvent.preventDefault();
@@ -476,8 +560,10 @@ let ProblemViewPage: React.FC<ProblemViewPageProps> = props => {
       if (splitLayoutRef.current) {
         const { left, width } = splitLayoutRef.current.getBoundingClientRect();
         const newLeftWidth = ((mouseMoveEvent.clientX - left) / width) * 100;
-        if (newLeftWidth > 20 && newLeftWidth < 80) {
-          setLeftWidthPercentage(newLeftWidth);
+        
+        // Allow full range resizing
+        if (newLeftWidth >= 0 && newLeftWidth <= 100) {
+            setLeftWidthPercentage(newLeftWidth);
         }
       }
     };
@@ -496,7 +582,12 @@ let ProblemViewPage: React.FC<ProblemViewPageProps> = props => {
     <div className={style.splitLayout} ref={splitLayoutRef}>
       {permissionManager}
       {deleteDialog.element}
-      <div className={style.leftColumn} style={{ flex: `0 0 ${leftWidthPercentage}%`, maxWidth: `${leftWidthPercentage}%` }}>
+      {isLeftCollapsed ? (
+          <div className={style.collapsedBar} onClick={restoreLeft}>
+              <div className={style.verticalText}>{_(".title")}</div>
+          </div>
+      ) : (
+      <div className={style.leftColumn} style={{ flex: `0 0 ${isRightCollapsed ? 'calc(100% - 32px)' : leftWidthPercentage + '%'}` , maxWidth: `${isRightCollapsed ? 'calc(100% - 32px)' : leftWidthPercentage + '%'}` , display: isRightCollapsed ? 'block' : (isLeftCollapsed ? 'none' : 'block') }}>
         <div className={style.topContainer}>
           <div className={style.titleSection}>
             <Header as="h1" className={style.header}>
@@ -711,11 +802,21 @@ let ProblemViewPage: React.FC<ProblemViewPageProps> = props => {
           )}
         </div>
       </div>
+      )}
+
+      {!isLeftCollapsed && !isRightCollapsed && (
       <div
           className={`${style.resizer} ${isResizing ? style.resizing : ""}`}
           onMouseDown={startResizing}
       />
-      <div className={style.rightColumn} style={{ position: "relative" }}>
+      )}
+
+      {isRightCollapsed ? (
+          <div className={style.collapsedBar} onClick={restoreRight}>
+              <div className={style.verticalText}>{_(".action.submit")}</div>
+          </div>
+      ) : (
+      <div className={style.rightColumn} style={{ flex: isLeftCollapsed ? '1 1 auto' : `0 0 ${100 - leftWidthPercentage}%`, maxWidth: isLeftCollapsed ? 'calc(100% - 32px)' : `${100 - leftWidthPercentage}%`, position: "relative", display: isLeftCollapsed ? 'block' : (isRightCollapsed ? 'none' : 'block') }}>
         {activeTabIndex === 0 && (
           <div style={{ position: "absolute", top: 10, right: 0, zIndex: 10, display: "flex", alignItems: "center", height: "40px", gap: "10px", paddingRight: "5px" }}>
             <Button
@@ -735,82 +836,8 @@ let ProblemViewPage: React.FC<ProblemViewPageProps> = props => {
             style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
             onTabChange={(e, data) => setActiveTabIndex(data.activeIndex as number)}
          />
-         {/* Manage Menu could be placed here or in left column */}
-         <div style={{ padding: '10px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <Dropdown text="More Actions" pointing className="link item">
-              <Dropdown.Menu>
-                  {ProblemTypeView.enableStatistics() && (
-                    <Dropdown.Item
-                      as={Link}
-                      href={getProblemUrl(props.problem.meta, { subRoute: "statistics/fastest" })}
-                      icon="sort content ascending"
-                      text={_(".action.statistics")}
-                    />
-                  )}
-                  <Dropdown.Item
-                    as={Link}
-                    href={{
-                      pathname: "/d",
-                      query: {
-                        problemId: props.problem.meta.id
-                      }
-                    }}
-                    icon="comments"
-                    text={_(".action.discussion")}
-                  />
-                  <Dropdown.Item
-                    name={_(".action.files")}
-                    icon="folder open"
-                    as={Link}
-                    href={getProblemUrl(props.problem.meta, { subRoute: "files" })}
-                    text={_(".action.files")}
-                  />
-                  <Dropdown.Divider />
-                  {props.problem.permissionOfCurrentUser.includes("Modify") && (
-                    <Dropdown.Item
-                      icon="edit"
-                      as={Link}
-                      href={{
-                        pathname: getProblemUrl(props.problem.meta, { subRoute: "edit" }),
-                        query: props.requestedLocale
-                          ? {
-                              locale: props.requestedLocale
-                            }
-                          : null
-                      }}
-                      text={_(".action.edit")}
-                    />
-                  )}
-                  {props.problem.permissionOfCurrentUser.includes("Modify") && (
-                    <Dropdown.Item
-                      icon="cog"
-                      as={Link}
-                      href={getProblemUrl(props.problem.meta, { subRoute: "judge-settings" })}
-                      text={_(".action.judge_settings")}
-                    />
-                  )}
-                  {props.problem.permissionOfCurrentUser.includes("Modify") && (
-                      <Dropdown.Item onClick={onClickPermissionManage} icon="key" text={_(".action.permission_manage")} />
-                  )}
-                  {props.problem.permissionOfCurrentUser.includes("Delete") && (
-                    <Dropdown.Item
-                      icon="delete"
-                      onClick={deleteDialog.open}
-                      text={_(".action.delete")}
-                    />
-                  )}
-              </Dropdown.Menu>
-            </Dropdown>
-            {activeTabIndex === 0 && props.problem.judgeInfo.runSamples && (
-              <Checkbox
-                className={style.skipSamples}
-                label={_(".submit.skip_samples")}
-                checked={(submissionContent as any).skipSamples}
-                onChange={(e, { checked }) => updateSubmissionContent("skipSamples", checked)}
-              />
-            )}
-         </div>
       </div>
+      )}
     </div>
   );
 };

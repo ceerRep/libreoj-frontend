@@ -5,10 +5,5 @@
 import { createGetApi, createPostApi } from "@/api";
 
 export const getHomepage = createGetApi<{ locale: string }, ApiTypes.GetHomepageResponseDto>("homepage/getHomepage");
-export const getHomepageSettings = createGetApi<void, ApiTypes.GetHomepageSettingsResponseDto>(
-  "homepage/getHomepageSettings"
-);
-export const updateHomepageSettings = createPostApi<
-  ApiTypes.UpdateHomepageSettingsRequestDto,
-  ApiTypes.UpdateHomepageSettingsResponseDto
->("homepage/updateHomepageSettings", false);
+export const getHomepageSettings = createGetApi<void, ApiTypes.GetHomepageSettingsResponseDto>("homepage/getHomepageSettings");
+export const updateHomepageSettings = createPostApi<ApiTypes.UpdateHomepageSettingsRequestDto, ApiTypes.UpdateHomepageSettingsResponseDto>("homepage/updateHomepageSettings", false);

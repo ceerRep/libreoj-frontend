@@ -517,6 +517,7 @@ let ProblemViewPage: React.FC<ProblemViewPageProps> = props => {
         onCloseSubmitView={closeSubmitView}
         onUpdateSubmissionContent={updateSubmissionContent}
         onSubmit={onSubmit}
+        setModified={setModified}
       />
       <div className={style.statementView} style={{ display: inSubmitView ? "none" : null }}>
         <div className={style.leftContainer}>

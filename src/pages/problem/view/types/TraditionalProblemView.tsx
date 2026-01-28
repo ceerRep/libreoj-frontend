@@ -108,6 +108,7 @@ let TraditionalProblemSubmitView: React.FC<TraditionalProblemSubmitViewProps> = 
       "compileAndRunOptions",
       getPreferredCompileAndRunOptions(fallbackLanguage)
     );
+    props.setModified(false);
   }, [allowedLanguages, props.onUpdateSubmissionContent, props.submissionContent.language]);
   
   return (
